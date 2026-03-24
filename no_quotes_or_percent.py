@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
 
-cols = ["Height", "Weight", "Reach", "SLpM", "Str_Acc", "SApM", "Str_Def",
-    "TD_Avg", "TD_Acc", "TD_Def", "Sub_Avg"]
+#cols = ["Height", "Weight", "Reach", "SLpM", "Str_Acc", "SApM", "Str_Def",
+   # "TD_Avg", "TD_Acc", "TD_Def", "Sub_Avg"]
 
 df = pd.read_csv("zero_removed.csv")
 
