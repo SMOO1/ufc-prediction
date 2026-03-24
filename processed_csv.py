@@ -12,3 +12,5 @@ women.update(women_fights["loser_name"])
 print(women_fights)
 
 print(women)
+
+women_fights.to_csv("women_fight_stats.csv")
