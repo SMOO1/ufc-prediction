@@ -14,5 +14,6 @@ df["Age"] = df["DOB"].apply(lambda x: (today - x).days // 365 if pd.notnull(x) e
 df = df.drop(columns = "DOB")
 
 print(df)
+df.drop("Unnamed: 0", axis = 1)
 
-df.to_csv("cleaned_numeric_ages.csv")
+df.to_csv("cleaned_numeric_ages.csv", index = False)
