@@ -11,5 +11,5 @@ df = pd.read_csv("gendered_stats.csv")
 df["Height"] =  df["Height"].apply(lambda x: height_to_inches(x))
 df["Reach"] = df["Reach"].apply(lambda x: height_to_inches(x))
 
-df.to_csv("converted_height.csv")
+df.to_csv("converted_height.csv", index = False)
 
