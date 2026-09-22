@@ -7,7 +7,7 @@ import numpy as np
 df = pd.read_csv("zero_removed.csv")
 
 df["Height"] = df["Height"].str.replace('"', '')
-df["Reach"] = df["Height"].str.replace('"', '')
+df["Reach"] = df["Reach"].str.replace('"', '')
 
 percent_cols = ["Str_Acc", "Str_Def", "TD_Acc", "TD_Def"]
 
@@ -16,4 +16,3 @@ for col in percent_cols:
 
 df.to_csv("no_quotes_and_percent.csv")
 print(df)
-
