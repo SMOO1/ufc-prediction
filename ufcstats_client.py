@@ -82,6 +82,28 @@ class FighterProfile:
             "dob": self.dob,
         }
 
+    def api_values(self) -> dict[str, Any]:
+        """Return JSON-safe profile data for the Spring Boot web API."""
+        return {
+            "name": self.name,
+            "nickname": self.nickname,
+            "record": self.record,
+            "url": self.url,
+            "heightInches": self.height_inches,
+            "weightLbs": self.weight_lbs,
+            "reachInches": self.reach_inches,
+            "stance": self.stance,
+            "dob": self.dob.date().isoformat() if self.dob else None,
+            "slpm": self.slpm,
+            "strikingAccuracy": self.str_acc,
+            "sapm": self.sapm,
+            "strikingDefense": self.str_def,
+            "takedownAverage": self.td_avg,
+            "takedownAccuracy": self.td_acc,
+            "takedownDefense": self.td_def,
+            "submissionAverage": self.sub_avg,
+        }
+
     def summary(self) -> str:
         def show(value: Any, suffix: str = "") -> str:
             return "N/A" if value is None else f"{value:g}{suffix}"
