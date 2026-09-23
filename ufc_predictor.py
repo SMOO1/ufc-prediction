@@ -54,6 +54,11 @@ FEATURES = [
     "womens_bout",
     "scheduled_rounds",
 ]
+SIGNED_FEATURES = [feature for feature in FEATURES if feature.endswith("_diff")]
+SWAPPED_FEATURE_PAIRS = [
+    ("red_experience", "blue_experience"),
+    ("red_debut", "blue_debut"),
+]
 TRAINING_YEARS = 8
 
 
@@ -287,9 +292,27 @@ def chronological_split(dataset: pd.DataFrame, train_fraction: float = 0.8) -> t
     return train, test, cutoff
 
 
+def mirror_matchup_features(features: pd.DataFrame) -> pd.DataFrame:
+    """Return the same matchup with red and blue exchanged."""
+    mirrored = features.copy()
+    for feature in SIGNED_FEATURES:
+        mirrored[feature] = -features[feature]
+    for red_feature, blue_feature in SWAPPED_FEATURE_PAIRS:
+        mirrored[red_feature] = features[blue_feature]
+        mirrored[blue_feature] = features[red_feature]
+    return mirrored
+
+
+def symmetric_probabilities(model: Pipeline, features: pd.DataFrame) -> np.ndarray:
+    """Neutralize learned corner/order bias by scoring both orientations."""
+    forward = model.predict_proba(features[FEATURES])[:, 1]
+    reverse = model.predict_proba(mirror_matchup_features(features[FEATURES]))[:, 1]
+    return (forward + (1.0 - reverse)) / 2.0
+
+
 def evaluate(model: Pipeline, dataset: pd.DataFrame, test_rows: np.ndarray) -> dict[str, float]:
     y = dataset.iloc[test_rows]["red_win"].astype(int)
-    probability = model.predict_proba(dataset.iloc[test_rows][FEATURES])[:, 1]
+    probability = symmetric_probabilities(model, dataset.iloc[test_rows][FEATURES])
     return {
         "accuracy": accuracy_score(y, probability >= 0.5),
         "roc_auc": roc_auc_score(y, probability),
@@ -352,7 +375,7 @@ def predict_matchup(
         womens_bout=womens_bout,
         scheduled_rounds=float(scheduled_rounds),
     )
-    return float(model.predict_proba(pd.DataFrame([row], columns=FEATURES))[0, 1])
+    return float(symmetric_probabilities(model, pd.DataFrame([row], columns=FEATURES))[0])
 
 
 def _parser() -> argparse.ArgumentParser:
