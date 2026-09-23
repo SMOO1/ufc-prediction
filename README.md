@@ -1,21 +1,53 @@
-# UFC Prediction
+# FightScope — UFC Prediction Website
 
-A leakage-safe UFC winner predictor built from the included historical fight results.
+A full-stack UFC winner prediction website with a Spring Boot backend, responsive
+browser interface, live UFCStats profiles, and a leakage-safe Python model.
 
 The model reconstructs the red and blue corners for every bout and calculates Elo,
 experience, recent form, streak, layoff, opponent-strength, finishing, age, height,
 and reach features using only information available before that fight. It never uses
 statistics from the fight being predicted or final career averages in historical rows.
 
-## Setup
+## Requirements
+
+- Java 21+
+- Python 3.11+
+
+Maven does not need to be installed; the repository includes Maven Wrapper.
+
+## Setup and run the website
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+./mvnw spring-boot:run
 ```
 
-## Evaluate the model
+Open [http://localhost:8080](http://localhost:8080). Spring Boot serves the site
+and the `/api/predictions` endpoint. Each request validates its inputs, runs the
+Python prediction engine without a shell, enforces a timeout, and returns JSON.
+
+If needed, configure a different Python executable or project directory:
+
+```bash
+PYTHON_EXECUTABLE=/path/to/python UFC_PROJECT_ROOT=/path/to/repo ./mvnw spring-boot:run
+```
+
+Health checks are available at `http://localhost:8080/actuator/health`.
+
+## Architecture
+
+```text
+Browser UI → Spring Boot REST API → Python prediction engine → UFCStats
+```
+
+- `src/main/java`: API validation, process management, timeouts, and error responses
+- `src/main/resources/static`: responsive HTML, CSS, and JavaScript frontend
+- `ufc_predictor.py`: chronological feature generation and trained model
+- `ufcstats_client.py`: exact-name profile lookup and parsing
+
+## Evaluate or use the model from the terminal
 
 ```bash
 python regression.py

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Leakage-safe UFC fight predictions powered by live UFCStats profiles.">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'">
+    <title>FightScope — UFC Prediction Lab</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="/" aria-label="FightScope home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>FIGHT<span>SCOPE</span></span>
+    </a>
+    <div class="status-pill"><span></span> Live UFCStats lookup</div>
+</header>
+
+<main>
+    <section class="hero">
+        <p class="eyebrow">MATCHUP INTELLIGENCE / MODEL 01</p>
+        <h1>Read the fight<br><em>before the bell.</em></h1>
+        <p class="hero-copy">Enter two UFC fighters. We pull their current profiles, rebuild their pre-fight histories, and return a calibrated matchup probability.</p>
+    </section>
+
+    <section class="prediction-shell" aria-labelledby="prediction-heading">
+        <div class="section-heading">
+            <div>
+                <p class="section-kicker">New analysis</p>
+                <h2 id="prediction-heading">Build a matchup</h2>
+            </div>
+            <span class="data-note">Exact UFCStats names only</span>
+        </div>
+
+        <form id="predictionForm" novalidate>
+            <div class="fighters-grid">
+                <label class="fighter-input fighter-input-red">
+                    <span class="corner-tag">RED CORNER</span>
+                    <span class="input-label">Fighter one</span>
+                    <input id="fighter1" name="fighter1" type="text" autocomplete="off" maxlength="100"
+                           placeholder="sean_omalley" aria-describedby="nameHelp" required>
+                </label>
+
+                <div class="versus" aria-hidden="true"><span>VS</span></div>
+
+                <label class="fighter-input fighter-input-blue">
+                    <span class="corner-tag">BLUE CORNER</span>
+                    <span class="input-label">Fighter two</span>
+                    <input id="fighter2" name="fighter2" type="text" autocomplete="off" maxlength="100"
+                           placeholder="merab_dvalishvili" aria-describedby="nameHelp" required>
+                </label>
+            </div>
+            <p id="nameHelp" class="field-help">Use the full name with an underscore between names. Punctuation is optional.</p>
+
+            <div class="bout-settings">
+                <label class="setting-field">
+                    <span>Fight date</span>
+                    <input id="fightDate" name="date" type="date" required>
+                </label>
+
+                <fieldset class="round-picker">
+                    <legend>Scheduled rounds</legend>
+                    <div>
+                        <input id="rounds3" name="rounds" type="radio" value="3" checked>
+                        <label for="rounds3">3 rounds</label>
+                        <input id="rounds5" name="rounds" type="radio" value="5">
+                        <label for="rounds5">5 rounds</label>
+                    </div>
+                </fieldset>
+
+                <label class="switch-field">
+                    <span><strong>Title bout</strong><small>Championship context</small></span>
+                    <input id="titleBout" type="checkbox">
+                    <i aria-hidden="true"></i>
+                </label>
+
+                <label class="switch-field">
+                    <span><strong>Women's bout</strong><small>Division context</small></span>
+                    <input id="womensBout" type="checkbox">
+                    <i aria-hidden="true"></i>
+                </label>
+            </div>
+
+            <div id="errorMessage" class="error-message" role="alert" hidden></div>
+
+            <button id="submitButton" class="predict-button" type="submit">
+                <span class="button-label">Run fight analysis</span>
+                <span class="button-loading" hidden><i></i> Pulling profiles &amp; running model</span>
+                <span aria-hidden="true">↗</span>
+            </button>
+        </form>
+    </section>
+
+    <section id="results" class="results" aria-live="polite" hidden>
+        <div class="result-topline">
+            <div>
+                <p class="section-kicker">Model output</p>
+                <h2 id="resultTitle">Fight projection</h2>
+            </div>
+            <span id="boutSummary" class="data-note"></span>
+        </div>
+
+        <div class="probability-card">
+            <div class="probability-side red-side">
+                <span>RED</span>
+                <h3 id="redResultName"></h3>
+                <strong id="redProbability">0%</strong>
+            </div>
+            <div class="probability-center">
+                <p>PROJECTED WINNER</p>
+                <strong id="winnerName"></strong>
+                <small id="confidenceLabel"></small>
+            </div>
+            <div class="probability-side blue-side">
+                <span>BLUE</span>
+                <h3 id="blueResultName"></h3>
+                <strong id="blueProbability">0%</strong>
+            </div>
+            <div class="probability-track" aria-hidden="true">
+                <div id="redBar" class="red-bar"></div>
+                <div id="blueBar" class="blue-bar"></div>
+            </div>
+        </div>
+
+        <div id="profileCards" class="profile-grid"></div>
+
+        <div class="model-strip">
+            <div><span>Holdout accuracy</span><strong id="modelAccuracy">—</strong></div>
+            <div><span>ROC AUC</span><strong id="modelAuc">—</strong></div>
+            <div><span>Test fights</span><strong id="testFights">—</strong></div>
+            <p>Probabilities are estimates, not guarantees. Analytics only — not betting advice.</p>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <p>FightScope <span>•</span> Leakage-safe chronological model</p>
+    <p>Fighter data sourced live from <a href="http://ufcstats.com" target="_blank" rel="noreferrer">UFCStats</a></p>
+</footer>
+</body>
+</html>

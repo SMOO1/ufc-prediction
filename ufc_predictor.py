@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import difflib
+import json
 import math
 import re
 from collections import deque
@@ -366,6 +367,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--title", action="store_true")
     parser.add_argument("--women", action="store_true")
     parser.add_argument("--offline", action="store_true", help="Use bundled fighter details instead of UFCStats")
+    parser.add_argument("--json", action="store_true", help="Emit one machine-readable JSON response")
     parser.add_argument("--model-out", type=Path)
     return parser
 
@@ -379,6 +381,8 @@ def main() -> None:
     if positional_pair and args.predict:
         parser.error("use either positional fighter inputs or --predict, not both")
     pair = tuple(args.predict) if args.predict else positional_pair
+    if args.json and not pair:
+        parser.error("--json requires two fighter inputs")
 
     profiles = load_profiles(args.fighters)
     live_profiles: list[FighterProfile] = []
@@ -396,22 +400,14 @@ def main() -> None:
     dataset, states = build_prefight_dataset(fights, profiles)
     model, metrics, cutoff = train_and_evaluate(dataset)
 
-    print(f"Chronological holdout: {cutoff.date()} through {dataset.event_date.max().date()}")
-    for name, value in metrics.items():
-        print(f"{name}: {int(value) if name in {'n_train', 'n_test'} else f'{value:.4f}'}")
-
     if args.model_out:
         args.model_out.parent.mkdir(parents=True, exist_ok=True)
         joblib.dump({"model": model, "states": states, "profiles": profiles, "features": FEATURES}, args.model_out)
-        print(f"Saved model: {args.model_out}")
+        if not args.json:
+            print(f"Saved model: {args.model_out}")
 
+    probability = None
     if pair:
-        if live_profiles:
-            print()
-            print(live_profiles[0].summary())
-            print()
-            print(live_profiles[1].summary())
-            print()
         red_name, blue_name = pair
         probability = predict_matchup(
             model,
@@ -424,6 +420,40 @@ def main() -> None:
             womens_bout=args.women,
             scheduled_rounds=args.rounds,
         )
+
+    if args.json:
+        payload = {
+            "prediction": {
+                "redName": pair[0],
+                "blueName": pair[1],
+                "redProbability": probability,
+                "blueProbability": 1.0 - probability,
+                "date": args.date.date().isoformat(),
+                "rounds": args.rounds,
+                "titleBout": args.title,
+                "womensBout": args.women,
+            },
+            "fighters": [profile.api_values() for profile in live_profiles],
+            "metrics": {
+                **metrics,
+                "holdoutStart": cutoff.date().isoformat(),
+                "holdoutEnd": dataset.event_date.max().date().isoformat(),
+            },
+        }
+        print(json.dumps(payload, separators=(",", ":")))
+        return
+
+    print(f"Chronological holdout: {cutoff.date()} through {dataset.event_date.max().date()}")
+    for name, value in metrics.items():
+        print(f"{name}: {int(value) if name in {'n_train', 'n_test'} else f'{value:.4f}'}")
+
+    if pair:
+        if live_profiles:
+            print()
+            print(live_profiles[0].summary())
+            print()
+            print(live_profiles[1].summary())
+            print()
         print(f"{red_name} (red): {probability:.1%}")
         print(f"{blue_name} (blue): {1.0 - probability:.1%}")
 
