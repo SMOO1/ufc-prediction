@@ -36,6 +36,19 @@ PYTHON_EXECUTABLE=/path/to/python UFC_PROJECT_ROOT=/path/to/repo ./mvnw spring-b
 
 Health checks are available at `http://localhost:8080/actuator/health`.
 
+## Cloud deployment
+
+The repository includes a production `Dockerfile` and a Render Blueprint. The
+container packages Java 21, the Spring Boot application, Python, its model
+dependencies, and the two datasets required at prediction time.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/SMOO1/ufc-prediction)
+
+Render uses the platform-provided `PORT`, checks `/actuator/health`, and can
+redeploy automatically after changes land on the connected branch. Free web
+services can sleep during inactivity, so their first request after a pause can
+take longer.
+
 ## Architecture
 
 ```text

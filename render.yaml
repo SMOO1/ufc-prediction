@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: fightscope-ufc-prediction
+    runtime: docker
+    plan: free
+    healthCheckPath: /actuator/health
+    autoDeployTrigger: commit
