@@ -73,16 +73,17 @@ changed substantially since the earliest events.
 
 ## Predict a matchup with automatic UFCStats lookup
 
-Enter only two exact full names using underscores. The app resolves both names on
-UFCStats, downloads the profile fields shown on the fighter pages, displays them,
-and makes the prediction. The first input is red and the second input is blue:
+On the website, enter the two full names normally with spaces; underscores are not
+required. The app resolves both names on UFCStats, downloads the profile fields,
+displays them, and makes the prediction. From the terminal, quote names containing
+spaces:
 
 ```bash
-python regression.py israel_adesanya joe_pyfer --date 2026-10-01
+python regression.py "Israel Adesanya" "Joe Pyfer" --date 2026-10-01
 ```
 
-Names are case-insensitive. Punctuation is optional, so both `sean_omalley` and
-`"sean_o'malley"` resolve to Sean O'Malley. If either exact full name is absent
+Names are case-insensitive. Punctuation is optional, so both `"Sean O'Malley"` and
+`"Sean OMalley"` resolve to Sean O'Malley. If either exact full name is absent
 from UFCStats, the prediction stops and asks for a different name.
 
 Bout context can also be supplied:

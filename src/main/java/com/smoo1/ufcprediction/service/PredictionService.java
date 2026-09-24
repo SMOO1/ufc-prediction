@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -50,16 +51,10 @@ public class PredictionService {
         command.add(request.fighter1().trim());
         command.add(request.fighter2().trim());
         command.add("--date");
-        command.add(request.date().toString());
+        command.add(LocalDate.now().toString());
         command.add("--rounds");
-        command.add(request.rounds().toString());
+        command.add("3");
         command.add("--json");
-        if (request.titleBout()) {
-            command.add("--title");
-        }
-        if (request.womensBout()) {
-            command.add("--women");
-        }
 
         try {
             Process process = new ProcessBuilder(command)

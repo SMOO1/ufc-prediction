@@ -24,9 +24,6 @@ public class PredictionController {
 
     @PostMapping
     public ResponseEntity<JsonNode> predict(@Valid @RequestBody PredictionRequest request) {
-        if (request.rounds() != 3 && request.rounds() != 5) {
-            throw new IllegalArgumentException("Rounds must be either 3 or 5");
-        }
         if (canonicalName(request.fighter1()).equals(canonicalName(request.fighter2()))) {
             throw new IllegalArgumentException("Choose two different fighters");
         }

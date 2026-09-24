@@ -4,15 +4,6 @@ const buttonLabel = submitButton.querySelector(".button-label");
 const buttonLoading = submitButton.querySelector(".button-loading");
 const errorMessage = document.querySelector("#errorMessage");
 const results = document.querySelector("#results");
-const fightDate = document.querySelector("#fightDate");
-
-fightDate.value = new Date().toISOString().slice(0, 10);
-
-for (const input of document.querySelectorAll(".fighter-input input")) {
-    input.addEventListener("blur", () => {
-        input.value = input.value.trim().replace(/\s+/g, "_").toLowerCase();
-    });
-}
 
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -31,14 +22,7 @@ form.addEventListener("submit", async (event) => {
         const response = await fetch("/api/predictions", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({
-                fighter1,
-                fighter2,
-                date: fightDate.value,
-                rounds: Number(document.querySelector('input[name="rounds"]:checked').value),
-                titleBout: document.querySelector("#titleBout").checked,
-                womensBout: document.querySelector("#womensBout").checked
-            })
+            body: JSON.stringify({fighter1, fighter2})
         });
 
         const data = await response.json().catch(() => ({}));
@@ -82,37 +66,31 @@ function renderResults(data) {
     text("#blueProbability", formatPercent(prediction.blueProbability));
     text("#winnerName", redWins ? prediction.redName : prediction.blueName);
     text("#confidenceLabel", confidenceLabel(Math.max(redPercent, bluePercent)));
-    text("#boutSummary", `${prediction.rounds} ROUNDS • ${formatDate(prediction.date)}${prediction.titleBout ? " • TITLE" : ""}`);
-    document.querySelector("#redBar").style.width = `${redPercent}%`;
-    document.querySelector("#blueBar").style.width = `${bluePercent}%`;
 
     const profileCards = document.querySelector("#profileCards");
     profileCards.replaceChildren();
-    data.fighters.forEach((fighter, index) => profileCards.append(profileCard(fighter, index === 0 ? "red" : "blue")));
-
-    text("#modelAccuracy", formatPercent(data.metrics.accuracy));
-    text("#modelAuc", Number(data.metrics.roc_auc).toFixed(3));
-    text("#testFights", Math.round(data.metrics.n_test).toLocaleString());
+    data.fighters.forEach((fighter) => profileCards.append(profileCard(fighter)));
 
     results.hidden = false;
     results.scrollIntoView({behavior: "smooth", block: "start"});
 }
 
-function profileCard(fighter, corner) {
+function profileCard(fighter) {
     const card = document.createElement("article");
-    card.className = `profile-card ${corner}`;
+    card.className = "profile-card";
     card.innerHTML = `
         <header>
-            <div><span class="corner-label"></span><h3></h3><p class="nickname"></p></div>
+            <div><h3></h3><p class="nickname"></p></div>
             <span class="record"></span>
         </header>
         <div class="stats-grid"></div>
         <div class="detail-row"></div>
-        <a class="profile-link" target="_blank" rel="noreferrer">View source profile ↗</a>`;
+        <a class="profile-link" target="_blank" rel="noreferrer">UFCStats ↗</a>`;
 
-    card.querySelector(".corner-label").textContent = `${corner.toUpperCase()} CORNER`;
     card.querySelector("h3").textContent = fighter.name;
-    card.querySelector(".nickname").textContent = fighter.nickname ? `“${fighter.nickname}”` : "No listed nickname";
+    const nickname = card.querySelector(".nickname");
+    nickname.textContent = fighter.nickname ? `“${fighter.nickname}”` : "";
+    nickname.hidden = !fighter.nickname;
     card.querySelector(".record").textContent = fighter.record || "Record N/A";
 
     const stats = [
