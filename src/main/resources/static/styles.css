@@ -296,7 +296,7 @@ main {
     white-space: nowrap;
 }
 .stat strong { display: block; margin-top: 6px; font-size: 14px; }
-.detail-row { margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(85px, 1fr)); gap: 1px; }
+.detail-row { margin-top: 12px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; }
 .detail-row .stat { border: 1px solid var(--line); }
 .profile-link {
     display: inline-block;
@@ -323,4 +323,5 @@ main {
     .probability-center { grid-column: 1 / -1; grid-row: 2; min-height: 105px; border: 1px solid var(--line); border-width: 1px 0 0; }
     .profile-grid { grid-template-columns: 1fr; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .detail-row { grid-template-columns: repeat(auto-fit, minmax(85px, 1fr)); }
 }
