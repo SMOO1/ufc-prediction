@@ -20,7 +20,7 @@ RUN python3 -m venv /opt/ufc-venv \
     && /opt/ufc-venv/bin/pip install --no-cache-dir -r requirements.txt
 
 COPY --from=build /workspace/target/ufc-prediction-1.0.0-SNAPSHOT.jar app.jar
-COPY regression.py ufc_predictor.py ufcstats_client.py ./
+COPY regression.py upcoming_predictions.py ufc_predictor.py ufcstats_client.py ./
 COPY stats_processed.csv raw_fighter_details.csv ./
 
 ENV PYTHON_EXECUTABLE=/opt/ufc-venv/bin/python3 \

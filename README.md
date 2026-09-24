@@ -1,7 +1,8 @@
-# FightScope — UFC Prediction Website
+# UFSEE — UFC Prediction Website
 
 A full-stack UFC winner prediction website with a Spring Boot backend, responsive
-browser interface, live UFCStats profiles, and a leakage-safe Python model.
+browser interface, live UFCStats profiles, automatic upcoming-card predictions,
+and a leakage-safe Python model.
 
 The model reconstructs the red and blue corners for every bout and calculates Elo,
 experience, recent form, streak, layoff, opponent-strength, finishing, age, height,
@@ -25,7 +26,9 @@ pip install -r requirements.txt
 ```
 
 Open [http://localhost:8080](http://localhost:8080). Spring Boot serves the site
-and the `/api/predictions` endpoint. Each request validates its inputs, runs the
+and the `/api/predictions` endpoint. The `/api/upcoming` endpoint discovers the
+next event and its bouts from UFCStats, predicts the entire card in one model run,
+and caches that response for one hour. Each manual request validates its inputs, runs the
 Python prediction engine without a shell, enforces a timeout, and returns JSON.
 
 If needed, configure a different Python executable or project directory:

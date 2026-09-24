@@ -5,6 +5,8 @@ const buttonLoading = submitButton.querySelector(".button-loading");
 const errorMessage = document.querySelector("#errorMessage");
 const results = document.querySelector("#results");
 
+loadUpcomingCard();
+
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
     hideError();
@@ -166,4 +168,62 @@ function confidenceLabel(winnerPercent) {
     if (winnerPercent >= 70) return "High model separation";
     if (winnerPercent >= 60) return "Moderate model separation";
     return "Close matchup";
+}
+
+async function loadUpcomingCard() {
+    const status = document.querySelector("#upcomingStatus");
+    const eventPanel = document.querySelector("#upcomingEvent");
+    try {
+        const response = await fetch("/api/upcoming");
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(data.message || "Upcoming card unavailable.");
+        }
+        renderUpcomingCard(data);
+        status.hidden = true;
+        eventPanel.hidden = false;
+    } catch (error) {
+        status.textContent = error.message || "Upcoming card unavailable.";
+    }
+}
+
+function renderUpcomingCard(data) {
+    const eventName = document.querySelector("#upcomingEventName");
+    eventName.textContent = data.event.name;
+    eventName.href = data.event.url;
+
+    const eventDate = formatDate(data.event.date);
+    document.querySelector("#upcomingEventMeta").textContent = data.event.location
+        ? `${eventDate} · ${data.event.location}`
+        : eventDate;
+
+    const bouts = document.querySelector("#upcomingBouts");
+    bouts.replaceChildren();
+    data.bouts.forEach((bout) => bouts.append(upcomingBout(bout)));
+}
+
+function upcomingBout(bout) {
+    const card = document.createElement("article");
+    card.className = "upcoming-bout";
+
+    const weightClass = document.createElement("p");
+    weightClass.className = "bout-class";
+    weightClass.textContent = bout.weightClass || "UFC bout";
+    card.append(weightClass);
+    card.append(
+        upcomingFighter(bout.fighter1, bout.fighter1Probability, bout.predictedWinner),
+        upcomingFighter(bout.fighter2, bout.fighter2Probability, bout.predictedWinner)
+    );
+    return card;
+}
+
+function upcomingFighter(name, probability, predictedWinner) {
+    const row = document.createElement("div");
+    row.className = `bout-fighter${name === predictedWinner ? " winner" : ""}`;
+    const fighterName = document.createElement("span");
+    fighterName.textContent = name;
+    const percent = document.createElement("strong");
+    percent.textContent = formatPercent(probability);
+    row.append(fighterName, percent);
+    return row;
 }

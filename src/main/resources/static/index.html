@@ -3,27 +3,29 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Compare two UFC fighters and predict the winner.">
+    <meta name="description" content="UFSEE predicts UFC matchups and the next UFC fight card.">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'">
-    <title>FightScope — UFC Fight Predictor</title>
-    <link rel="stylesheet" href="/styles.css?v=4">
-    <script src="/app.js?v=3" defer></script>
+    <title>UFSEE — Predict a fight</title>
+    <link rel="stylesheet" href="/styles.css?v=5">
+    <script src="/app.js?v=4" defer></script>
 </head>
 <body>
 <header class="site-header">
-    <a class="brand" href="/" aria-label="FightScope home">
+    <a class="brand" href="/" aria-label="UFSEE home">
         <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span>FIGHT<span>SCOPE</span></span>
+        <span>UF<span>SEE</span></span>
     </a>
 </header>
 
 <main>
-    <section class="hero">
-        <h1>UFC Fight Predictor</h1>
-        <p>Enter two fighter names.</p>
-    </section>
+    <div class="content-grid">
+      <div class="primary-column">
+        <section class="hero">
+            <p class="eyebrow">UFSEE MODEL</p>
+            <h1>Predict a fight</h1>
+        </section>
 
-    <section class="prediction-shell" aria-label="Choose fighters">
+        <section class="prediction-shell" aria-label="Choose fighters">
         <form id="predictionForm" novalidate>
             <div class="fighters-grid">
                 <label class="fighter-input">
@@ -48,9 +50,9 @@
                 <span class="button-loading" hidden>Predicting...</span>
             </button>
         </form>
-    </section>
+        </section>
 
-    <section id="results" class="results" aria-live="polite" hidden>
+        <section id="results" class="results" aria-live="polite" hidden>
         <h2>Prediction</h2>
 
         <div class="probability-card">
@@ -70,7 +72,22 @@
         </div>
 
         <div id="profileCards" class="profile-grid"></div>
-    </section>
+        </section>
+      </div>
+
+      <aside class="upcoming-panel" aria-labelledby="upcomingHeading">
+        <header class="upcoming-header">
+          <p>Next card</p>
+          <h2 id="upcomingHeading">Upcoming predictions</h2>
+        </header>
+        <div id="upcomingStatus" class="upcoming-status">Loading upcoming card...</div>
+        <div id="upcomingEvent" hidden>
+          <a id="upcomingEventName" class="event-name" target="_blank" rel="noreferrer"></a>
+          <p id="upcomingEventMeta" class="event-meta"></p>
+          <div id="upcomingBouts" class="upcoming-bouts"></div>
+        </div>
+      </aside>
+    </div>
 </main>
 </body>
 </html>

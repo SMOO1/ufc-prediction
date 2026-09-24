@@ -32,6 +32,33 @@ PROFILE_HTML = """
 </ul>
 """
 
+UPCOMING_EVENTS_HTML = """
+<table>
+  <tr class="b-statistics__table-row">
+    <td class="b-statistics__table-col">
+      <a href="http://ufcstats.com/event-details/next">UFC Fight Night: Alpha vs. Beta</a>
+      <span class="b-statistics__date">September 26, 2026</span>
+    </td>
+    <td class="b-statistics__table-col">Las Vegas, Nevada, USA</td>
+  </tr>
+</table>
+"""
+
+EVENT_HTML = """
+<table><tbody>
+  <tr class="b-fight-details__table-row" data-link="http://ufcstats.com/fight-details/1">
+    <td class="b-fight-details__table-col"></td>
+    <td class="b-fight-details__table-col">
+      <a href="http://ufcstats.com/fighter-details/a">Alpha Fighter</a>
+      <a href="http://ufcstats.com/fighter-details/b">Beta Fighter</a>
+    </td>
+    <td class="b-fight-details__table-col"></td><td class="b-fight-details__table-col"></td>
+    <td class="b-fight-details__table-col"></td><td class="b-fight-details__table-col"></td>
+    <td class="b-fight-details__table-col">Bantamweight</td>
+  </tr>
+</tbody></table>
+"""
+
 
 class UFCStatsClientTests(unittest.TestCase):
     def test_name_normalization_accepts_requested_input_format(self):
@@ -62,6 +89,19 @@ class UFCStatsClientTests(unittest.TestCase):
         self.assertAlmostEqual(profile.td_acc, 0.42)
         self.assertAlmostEqual(profile.td_def, 0.60)
         self.assertAlmostEqual(profile.sub_avg, 0.2)
+
+    def test_upcoming_event_and_bouts_are_parsed(self):
+        events = UFCStatsClient.parse_upcoming_events(UPCOMING_EVENTS_HTML)
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0]["name"], "UFC Fight Night: Alpha vs. Beta")
+        self.assertEqual(events[0]["location"], "Las Vegas, Nevada, USA")
+
+        event = UFCStatsClient.parse_event(EVENT_HTML, events[0])
+        self.assertEqual(event.date.date().isoformat(), "2026-09-26")
+        self.assertEqual(len(event.bouts), 1)
+        self.assertEqual(event.bouts[0].fighter1, "Alpha Fighter")
+        self.assertEqual(event.bouts[0].fighter2, "Beta Fighter")
+        self.assertEqual(event.bouts[0].weight_class, "Bantamweight")
 
 
 if __name__ == "__main__":

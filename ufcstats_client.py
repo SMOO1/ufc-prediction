@@ -128,6 +128,24 @@ class FighterProfile:
         return "\n".join(lines)
 
 
+@dataclass(frozen=True)
+class UpcomingBout:
+    fighter1: str
+    fighter2: str
+    fighter1_url: str
+    fighter2_url: str
+    weight_class: str
+
+
+@dataclass(frozen=True)
+class UpcomingEvent:
+    name: str
+    date: datetime
+    location: str
+    url: str
+    bouts: tuple[UpcomingBout, ...]
+
+
 class UFCStatsClient:
     """Resolve exact fighter names and retrieve their current UFCStats profile."""
 
@@ -239,6 +257,55 @@ class UFCStatsClient:
             sub_avg=_number(values.get("SUB AVG", "")),
         )
 
+    @staticmethod
+    def parse_upcoming_events(html: str) -> list[dict[str, Any]]:
+        events: list[dict[str, Any]] = []
+        soup = BeautifulSoup(html, "html.parser")
+        for row in soup.select("tr.b-statistics__table-row"):
+            link = row.select_one('a[href*="/event-details/"]')
+            date_node = row.select_one(".b-statistics__date")
+            cells = row.select("td.b-statistics__table-col")
+            if link is None or date_node is None:
+                continue
+            try:
+                event_date = datetime.strptime(date_node.get_text(" ", strip=True), "%B %d, %Y")
+            except ValueError:
+                continue
+            events.append({
+                "name": link.get_text(" ", strip=True),
+                "date": event_date,
+                "location": cells[1].get_text(" ", strip=True) if len(cells) > 1 else "",
+                "url": link.get("href", "").strip(),
+            })
+        return events
+
+    @staticmethod
+    def parse_event(html: str, event: dict[str, Any]) -> UpcomingEvent:
+        soup = BeautifulSoup(html, "html.parser")
+        bouts: list[UpcomingBout] = []
+        for row in soup.select("tr.b-fight-details__table-row[data-link]"):
+            fighter_links = row.select('a[href*="/fighter-details/"]')
+            if len(fighter_links) < 2:
+                continue
+            cells = row.select("td.b-fight-details__table-col")
+            weight_class = cells[6].get_text(" ", strip=True) if len(cells) > 6 else ""
+            bouts.append(UpcomingBout(
+                fighter1=fighter_links[0].get_text(" ", strip=True),
+                fighter2=fighter_links[1].get_text(" ", strip=True),
+                fighter1_url=fighter_links[0].get("href", "").strip(),
+                fighter2_url=fighter_links[1].get("href", "").strip(),
+                weight_class=weight_class,
+            ))
+        if not bouts:
+            raise UFCStatsError(f"No bouts are listed yet for {event['name']}")
+        return UpcomingEvent(
+            name=event["name"],
+            date=event["date"],
+            location=event.get("location", ""),
+            url=event["url"],
+            bouts=tuple(bouts),
+        )
+
     def _directory(self, letter: str) -> list[dict[str, str]]:
         if letter not in self._directory_cache:
             url = f"{BASE_URL}/statistics/fighters?char={letter}&page=all"
@@ -270,3 +337,18 @@ class UFCStatsClient:
         profile = self.parse_profile(self._get(matches[0]["url"]).text, matches[0])
         self._profile_cache[query] = profile
         return profile
+
+    def get_fighter_by_url(self, name: str, url: str) -> FighterProfile:
+        query = normalize_fighter_name(name)
+        if query not in self._profile_cache:
+            match = {"name": name, "nickname": "", "url": url}
+            self._profile_cache[query] = self.parse_profile(self._get(url).text, match)
+        return self._profile_cache[query]
+
+    def get_upcoming_event(self) -> UpcomingEvent:
+        events_url = f"{BASE_URL}/statistics/events/upcoming?page=all"
+        events = self.parse_upcoming_events(self._get(events_url).text)
+        if not events:
+            raise UFCStatsError("UFCStats does not currently list an upcoming event")
+        next_event = min(events, key=lambda event: event["date"])
+        return self.parse_event(self._get(next_event["url"]).text, next_event)
